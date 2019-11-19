@@ -1,0 +1,61 @@
+
+/**********************************************************
+ *Name					:GlobalEdge Software Ltd
+ *Author				:Sudeepgoud I Patil
+ *Date of Creation		:Sun Nov  3 11:30:04 IST 2019
+ *Description			:
+ *Copyright				:GPLV2
+ *MOdification History	:--Nill--
+*****************************************************************/
+
+#include<stdio.h>
+#include<pthread.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<sys/types.h>
+#include<sys/syscall.h>
+
+int main()
+{
+	pthread_t thread;
+	pid_t child;
+
+	child = vfork();
+	
+	if(child == 0){
+		printf("process 1 pid = %ld\n", syscall(SYS_gettid));
+		printf("process 1 tgid = %d\n", getpid());
+		printf("process 1 parent pid = %d\n\n", getppid());
+
+		pid_t child1;
+		child1 = vfork();
+		if(child1 == 0){
+			printf("process 2 pid = %ld\n", syscall(SYS_gettid));
+			printf("process 2 tgid = %d\n", getpid());
+			printf("process 2 parent pid = %d\n\n", getppid());
+			exit(0);
+		}
+		wait(NULL);
+		//Thread Creation.
+		pthread_t thread1;
+		void *thread_fun()
+		{
+			printf("thread 1 pid = %ld\n", syscall(SYS_gettid));
+			printf("thread 1 tgid = %d\n", getpid());
+			printf("thread 1 parent pid = %d\n\n", getppid());
+			pthread_exit(NULL);
+		}
+		int t_status;
+		t_status = pthread_create(&thread1, NULL, &thread_fun, NULL);
+		if(t_status != 0){
+			perror("Thread Create failed");
+		}
+		sleep(10);
+		//exit(1);
+	}
+		
+	return 0;
+}
+
+
+
